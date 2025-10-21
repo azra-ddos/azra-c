@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azra-c - Surat Romantis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --primary: #ff6b8b;
+            --secondary: #ffacc7;
+            --accent: #ff4081;
+            --light: #fff5f7;
+            --dark: #4a2c40;
+            --text: #4a2c40;
+            --shadow: 0 4px 15px rgba(255, 107, 139, 0.2);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --gradient: linear-gradient(135deg, #ff6b8b 0%, #ffacc7 100%);
+        }
+
+        .dark-theme {
+            --primary: #e91e63;
+            --secondary: #ad1457;
+            --accent: #ff4081;
+            --light: #1a1a1a;
+            --dark: #f5f5f5;
+            --text: #f0f0f0;
+            --shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
+            --gradient: linear-gradient(135deg, #e91e63 0%, #ad1457 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--light);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Animasi Halaman */
+        .page {
+            position: absolute;
+            width: 100%;
+            min-height: 100vh;
+            opacity: 0;
+            transform: translateX(50px);
+            transition: var(--transition);
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .page.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 107, 139, 0.2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo i {
+            font-size: 28px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-id {
+            background: var(--light);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .logout-btn, .theme-toggle {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover, .theme-toggle:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Form Styles */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .auth-form {
+            background: var(--light);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .auth-form h2 {
+            margin-bottom: 30px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 107, 139, 0.3);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: var(--transition);
+            background: var(--light);
+            color: var(--text);
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 107, 139, 0.2);
+        }
+
+        .btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 139, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover::after {
+            left: 100%;
+        }
+
+        .auth-switch {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .auth-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        /* Main Menu */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .menu-card {
+            background: var(--light);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 107, 139, 0.3);
+        }
+
+        .menu-card i {
+            font-size: 40px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .menu-card h3 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .menu-card p {
+            color: var(--text);
+            opacity: 0.8;
+            font-size: 14px;
+        }
+
+        .menu-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: var(--transition);
+        }
+
+        .menu-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* Letter Form */
+        .letter-form {
+            background: var(--light);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            margin-top: 20px;
+            transition: var(--transition);
+        }
+
+        .letter-form h2 {
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid rgba(255, 107, 139, 0.3);
+            border-radius: 10px;
+            font-size: 16px;
+            min-height: 200px;
+            resize: vertical;
+            transition: var(--transition);
+            background: var(--light);
+            color: var(--text);
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 107, 139, 0.2);
+        }
+
+        /* Letters Grid */
+        .letters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .letter-card {
+            background: var(--light);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .letter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 107, 139, 0.3);
+        }
+
+        .letter-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--gradient);
+        }
+
+        .letter-sender {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .letter-recipient {
+            font-size: 14px;
+            color: var(--text);
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .letter-preview {
+            font-size: 14px;
+            color: var(--text);
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .letter-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .delete-letter-btn {
+            background: rgba(255, 107, 139, 0.1);
+            color: var(--primary);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .delete-letter-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Letter Detail */
+        .letter-detail {
+            background: var(--light);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            margin-top: 20px;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .letter-detail::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--gradient);
+        }
+
+        .letter-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 107, 139, 0.2);
+        }
+
+        .letter-content {
+            line-height: 1.6;
+            font-size: 16px;
+            white-space: pre-line;
+        }
+
+        .back-btn {
+            background: var(--light);
+            color: var(--primary);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: var(--shadow);
+        }
+
+        .back-btn:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        /* Chat Section */
+        .chat-container {
+            display: flex;
+            height: 70vh;
+            margin-top: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .chat-users {
+            width: 100%;
+            background: var(--light);
+            overflow-y: auto;
+            transition: var(--transition);
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: var(--gradient);
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-search {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 107, 139, 0.2);
+        }
+
+        .user-search input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid rgba(255, 107, 139, 0.3);
+            border-radius: 20px;
+            font-size: 14px;
+            background: var(--light);
+            color: var(--text);
+        }
+
+        .user-list {
+            padding: 10px 0;
+            max-height: calc(70vh - 130px);
+            overflow-y: auto;
+        }
+
+        .user-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: 1px solid rgba(255, 107, 139, 0.1);
+        }
+
+        .user-item:hover {
+            background: rgba(255, 107, 139, 0.1);
+        }
+
+        .user-item.active {
+            background: rgba(255, 107, 139, 0.2);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        .user-id-small {
+            font-size: 12px;
+            color: var(--text);
+            opacity: 0.7;
+        }
+
+        .chat-messages {
+            display: none;
+            flex: 1;
+            background: var(--light);
+            flex-direction: column;
+            transition: var(--transition);
+        }
+
+        .chat-messages.active {
+            display: flex;
+        }
+
+        .chat-header-main {
+            padding: 15px 20px;
+            background: var(--light);
+            border-bottom: 1px solid rgba(255, 107, 139, 0.2);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-to-users {
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: var(--transition);
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 12px 15px;
+            border-radius: 15px;
+            position: relative;
+            animation: messageAppear 0.3s ease-out;
+        }
+
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background: var(--gradient);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background: var(--light);
+            color: var(--text);
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .message-time {
+            font-size: 11px;
+            margin-top: 5px;
+            opacity: 0.7;
+            text-align: right;
+        }
+
+        .message-input {
+            padding: 15px 20px;
+            background: var(--light);
+            border-top: 1px solid rgba(255, 107, 139, 0.2);
+            display: flex;
+            gap: 10px;
+            transition: var(--transition);
+        }
+
+        .message-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 107, 139, 0.3);
+            border-radius: 20px;
+            font-size: 14px;
+            background: var(--light);
+            color: var(--text);
+        }
+
+        .send-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(255, 107, 139, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Heart Animation */
+        .heart {
+            position: fixed;
+            font-size: 20px;
+            color: var(--primary);
+            opacity: 0;
+            z-index: -1;
+            animation: float 8s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: var(--gradient);
+            color: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            max-width: 350px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification i {
+            font-size: 18px;
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+                height: 80vh;
+            }
+            
+            .chat-users {
+                width: 100%;
+                height: 100%;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .letters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-messages.active {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10;
+                background: var(--light);
+            }
+
+            .notification {
+                right: 62px;
+                left: 15px;
+                max-width: none;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Confirmation Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--light);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .modal p {
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-btn.cancel {
+            background: var(--light);
+            color: var(--text);
+            border: 1px solid rgba(255, 107, 139, 0.3);
+        }
+
+        .modal-btn.confirm {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmationModal">
+        <div class="modal">
+            <h3><i class="fas fa-exclamation-triangle"></i> Konfirmasi</h3>
+            <p id="modalMessage">Apakah Anda yakin ingin menghapus surat ini?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="modalCancel">Batal</button>
+                <button class="modal-btn confirm" id="modalConfirm">Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <i class="fas fa-heart" id="notificationIcon"></i>
+        <span id="notificationText"></span>
+    </div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="page active">
+        <div class="auth-container">
+            <div class="auth-form">
+                <h2><i class="fas fa-heart"></i> Masuk ke AZRA-C</h2>
+                <div class="form-group">
+                    <label for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" placeholder="Masukkan username Anda">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Masukkan password Anda">
+                </div>
+                <button id="loginBtn" class="btn">Masuk</button>
+                <div class="auth-switch">
+                    Belum punya akun? <a href="#" id="goToRegister">Daftar di sini</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Page -->
+    <div id="registerPage" class="page">
+        <div class="auth-container">
+            <div class="auth-form">
+                <h2><i class="fas fa-heart"></i> Daftar ke AZRA-C</h2>
+                <div class="form-group">
+                    <label for="registerName">Nama Lengkap</label>
+                    <input type="text" id="registerName" placeholder="Masukkan nama lengkap Anda">
+                </div>
+                <div class="form-group">
+                    <label for="registerUsername">Username</label>
+                    <input type="text" id="registerUsername" placeholder="Buat username unik">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" placeholder="Buat password yang kuat">
+                </div>
+                <button id="registerBtn" class="btn">Daftar</button>
+                <div class="auth-switch">
+                    Sudah punya akun? <a href="#" id="goToLogin">Masuk di sini</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Page -->
+    <div id="mainPage" class="page">
+        <div class="container">
+            <header>
+                <div class="logo">
+                    <i class="fas fa-heart"></i>
+                    <span>AZRA-C</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-id">ID: <span id="userIdDisplay"></span></div>
+                    <div class="header-buttons">
+                        <button id="themeToggle" class="theme-toggle">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        <button id="logoutBtn" class="logout-btn">Keluar</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="menu-grid">
+                <div class="menu-card" id="writeLetterBtn">
+                    <i class="fas fa-pen-fancy"></i>
+                    <h3>Tulis Surat Romantis</h3>
+                    <p>Ungkapkan perasaan Anda dengan kata-kata indah</p>
+                </div>
+                <div class="menu-card" id="viewLettersBtn">
+                    <i class="fas fa-envelope-open-text"></i>
+                    <h3>Baca Surat Romantis</h3>
+                    <p>Baca surat cinta dari pengguna lain</p>
+                </div>
+                <div class="menu-card" id="chatBtn">
+                    <i class="fas fa-comments"></i>
+                    <h3>Chat Real-time</h3>
+                    <p>Kirim pesan langsung ke pengguna lain</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Write Letter Page -->
+    <div id="writeLetterPage" class="page">
+        <div class="container">
+            <button class="back-btn" id="backFromWrite"><i class="fas fa-arrow-left"></i> Kembali</button>
+            <div class="letter-form">
+                <h2><i class="fas fa-heart"></i> Tulis Surat Romantis</h2>
+                <div class="form-group">
+                    <label for="senderName">Nama Pengirim</label>
+                    <input type="text" id="senderName" placeholder="Siapa nama Anda?">
+                </div>
+                <div class="form-group">
+                    <label for="recipientName">Untuk Siapa</label>
+                    <input type="text" id="recipientName" placeholder="Surat ini ditujukan untuk siapa?">
+                </div>
+                <div class="form-group">
+                    <label for="letterContent">Isi Surat</label>
+                    <textarea id="letterContent" placeholder="Tuliskan isi surat romantis Anda di sini..."></textarea>
+                </div>
+                <button id="sendLetterBtn" class="btn">Kirim Surat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Letters Page -->
+    <div id="viewLettersPage" class="page">
+        <div class="container">
+            <button class="back-btn" id="backFromView"><i class="fas fa-arrow-left"></i> Kembali</button>
+            <h2><i class="fas fa-heart"></i> Surat Romantis dari Pengguna Lain</h2>
+            <div id="lettersContainer" class="letters-grid">
+                <!-- Letters will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Letter Detail Page -->
+    <div id="letterDetailPage" class="page">
+        <div class="container">
+            <button class="back-btn" id="backFromDetail"><i class="fas fa-arrow-left"></i> Kembali</button>
+            <div id="letterDetail" class="letter-detail">
+                <!-- Letter details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Page -->
+    <div id="chatPage" class="page">
+        <div class="container">
+            <button class="back-btn" id="backFromChat"><i class="fas fa-arrow-left"></i> Kembali</button>
+            <h2><i class="fas fa-comments"></i> Chat Real-time</h2>
+            <div class="chat-container">
+                <div class="chat-users" id="chatUsersPanel">
+                    <div class="chat-header">
+                        <i class="fas fa-users"></i> Daftar Pengguna
+                    </div>
+                    <div class="user-search">
+                        <input type="text" id="userSearch" placeholder="Cari pengguna dengan ID...">
+                    </div>
+                    <div id="userList" class="user-list">
+                        <!-- User list will be loaded here -->
+                    </div>
+                </div>
+                <div class="chat-messages" id="chatMessagesPanel">
+                    <div class="chat-header-main">
+                        <button class="back-to-users" id="backToUsers">
+                            <i class="fas fa-arrow-left"></i> Kembali ke Daftar
+                        </button>
+                        <span id="chatWithUser"></span>
+                    </div>
+                    <div id="messagesContainer" class="messages-container">
+                        <!-- Messages will be loaded here -->
+                    </div>
+                    <div class="message-input">
+                        <input type="text" id="messageInput" placeholder="Ketik pesan Anda..." disabled>
+                        <button id="sendMessageBtn" class="send-btn" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5n7p7m8Q9Z8Q2Q5vQ6XqY9Z8Q2Q5vQ6X",
+            authDomain: "azra-c-romantic-letters.firebaseapp.com",
+            projectId: "azra-c-romantic-letters",
+            storageBucket: "azra-c-romantic-letters.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef1234567890abcdef"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // DOM Elements
+        const loginPage = document.getElementById('loginPage');
+        const registerPage = document.getElementById('registerPage');
+        const mainPage = document.getElementById('mainPage');
+        const writeLetterPage = document.getElementById('writeLetterPage');
+        const viewLettersPage = document.getElementById('viewLettersPage');
+        const letterDetailPage = document.getElementById('letterDetailPage');
+        const chatPage = document.getElementById('chatPage');
+
+        // Auth Elements
+        const loginUsername = document.getElementById('loginUsername');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const goToRegister = document.getElementById('goToRegister');
+        
+        const registerName = document.getElementById('registerName');
+        const registerUsername = document.getElementById('registerUsername');
+        const registerPassword = document.getElementById('registerPassword');
+        const registerBtn = document.getElementById('registerBtn');
+        const goToLogin = document.getElementById('goToLogin');
+        
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // Navigation Elements
+        const writeLetterBtn = document.getElementById('writeLetterBtn');
+        const viewLettersBtn = document.getElementById('viewLettersBtn');
+        const chatBtn = document.getElementById('chatBtn');
+        
+        const backFromWrite = document.getElementById('backFromWrite');
+        const backFromView = document.getElementById('backFromView');
+        const backFromDetail = document.getElementById('backFromDetail');
+        const backFromChat = document.getElementById('backFromChat');
+
+        // Letter Elements
+        const senderName = document.getElementById('senderName');
+        const recipientName = document.getElementById('recipientName');
+        const letterContent = document.getElementById('letterContent');
+        const sendLetterBtn = document.getElementById('sendLetterBtn');
+        const lettersContainer = document.getElementById('lettersContainer');
+        const letterDetail = document.getElementById('letterDetail');
+
+        // Chat Elements
+        const userSearch = document.getElementById('userSearch');
+        const userList = document.getElementById('userList');
+        const chatWithUser = document.getElementById('chatWithUser');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const chatUsersPanel = document.getElementById('chatUsersPanel');
+        const chatMessagesPanel = document.getElementById('chatMessagesPanel');
+        const backToUsers = document.getElementById('backToUsers');
+
+        // Notification Elements
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notificationText');
+        const notificationIcon = document.getElementById('notificationIcon');
+
+        // Modal Elements
+        const confirmationModal = document.getElementById('confirmationModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalCancel = document.getElementById('modalCancel');
+        const modalConfirm = document.getElementById('modalConfirm');
+
+        // Current User Data
+        let currentUser = null;
+        let currentUserId = null;
+        let currentChatUser = null;
+        let isDarkTheme = false;
+        let pendingDeleteLetterId = null;
+
+        // Show notification
+        function showNotification(message, type = 'info', duration = 4000) {
+            notificationText.textContent = message;
+            notification.className = 'notification';
+            
+            // Set icon and color based on type
+            switch(type) {
+                case 'success':
+                    notificationIcon.className = 'fas fa-check-circle';
+                    notification.classList.add('success');
+                    break;
+                case 'error':
+                    notificationIcon.className = 'fas fa-exclamation-circle';
+                    notification.classList.add('error');
+                    break;
+                case 'warning':
+                    notificationIcon.className = 'fas fa-exclamation-triangle';
+                    notification.classList.add('warning');
+                    break;
+                default:
+                    notificationIcon.className = 'fas fa-heart';
+                    break;
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+        }
+
+        // Show confirmation modal
+        function showConfirmation(message, onConfirm) {
+            modalMessage.textContent = message;
+            confirmationModal.classList.add('active');
+            
+            const confirmHandler = () => {
+                confirmationModal.classList.remove('active');
+                onConfirm();
+                modalConfirm.removeEventListener('click', confirmHandler);
+                modalCancel.removeEventListener('click', cancelHandler);
+            };
+            
+            const cancelHandler = () => {
+                confirmationModal.classList.remove('active');
+                modalConfirm.removeEventListener('click', confirmHandler);
+                modalCancel.removeEventListener('click', cancelHandler);
+            };
+            
+            modalConfirm.addEventListener('click', confirmHandler);
+            modalCancel.addEventListener('click', cancelHandler);
+        }
+
+        // Navigation Functions
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+            });
+            page.classList.add('active');
+            createHearts();
+        }
+
+        // Create floating hearts animation
+        function createHearts() {
+            // Remove existing hearts
+            document.querySelectorAll('.heart').forEach(heart => heart.remove());
+            
+            // Create new hearts
+            for (let i = 0; i < 15; i++) {
+                const heart = document.createElement('div');
+                heart.classList.add('heart');
+                heart.innerHTML = '❤';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.animationDelay = Math.random() * 5 + 's';
+                heart.style.fontSize = (Math.random() * 15 + 10) + 'px';
+                document.body.appendChild(heart);
+            }
+        }
+
+        // Generate unique user ID
+        function generateUserId() {
+            return 'AZ' + Math.random().toString(36).substr(2, 5).toUpperCase();
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            isDarkTheme = !isDarkTheme;
+            document.body.classList.toggle('dark-theme', isDarkTheme);
+            themeToggle.innerHTML = isDarkTheme ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('azraTheme', isDarkTheme ? 'dark' : 'light');
+        }
+
+        // Authentication Functions
+        function registerUser() {
+            const name = registerName.value.trim();
+            const username = registerUsername.value.trim();
+            const password = registerPassword.value.trim();
+            
+            if (!name || !username || !password) {
+                showNotification('Harap isi semua field!', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('Password harus minimal 6 karakter!', 'error');
+                return;
+            }
+            
+            // Check if username already exists
+            if (localStorage.getItem('user_' + username)) {
+                showNotification('Username sudah digunakan!', 'error');
+                return;
+            }
+            
+            const userId = generateUserId();
+            const userData = {
+                name,
+                username,
+                password,
+                userId,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Save user to localStorage
+            localStorage.setItem('user_' + username, JSON.stringify(userData));
+            
+            showNotification(`Pendaftaran berhasil! ID Anda adalah: ${userId}. Silakan login.`, 'success', 5000);
+            showPage(loginPage);
+            
+            // Clear form
+            registerName.value = '';
+            registerUsername.value = '';
+            registerPassword.value = '';
+        }
+
+        function loginUser() {
+            const username = loginUsername.value.trim();
+            const password = loginPassword.value.trim();
+            
+            if (!username || !password) {
+                showNotification('Harap isi username dan password!', 'error');
+                return;
+            }
+            
+            // Check if user exists in localStorage
+            const userData = JSON.parse(localStorage.getItem('user_' + username));
+            
+            if (!userData) {
+                showNotification('Username tidak ditemukan!', 'error');
+                return;
+            }
+            
+            if (userData.password !== password) {
+                showNotification('Password salah!', 'error');
+                return;
+            }
+            
+            // Login successful
+            currentUser = userData;
+            currentUserId = userData.userId;
+            userIdDisplay.textContent = currentUserId;
+            
+            // Save current session
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            
+            showPage(mainPage);
+            showNotification(`Selamat datang kembali, ${userData.name}! Semoga hari Anda penuh cinta dan kebahagiaan.`, 'success', 5000);
+            
+            // Clear form
+            loginUsername.value = '';
+            loginPassword.value = '';
+        }
+
+        function logoutUser() {
+            showConfirmation('Apakah Anda yakin ingin keluar?', () => {
+                currentUser = null;
+                currentUserId = null;
+                localStorage.removeItem('currentUser');
+                showPage(loginPage);
+                showNotification('Anda telah berhasil keluar. Sampai jumpa lagi!', 'info', 4000);
+            });
+        }
+
+        // Check if user is already logged in
+        function checkAuthStatus() {
+            const savedUser = localStorage.getItem('currentUser');
+            const savedTheme = localStorage.getItem('azraTheme');
+            
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                currentUserId = currentUser.userId;
+                userIdDisplay.textContent = currentUserId;
+                showPage(mainPage);
+            } else {
+                showPage(loginPage);
+            }
+            
+            // Apply saved theme
+            if (savedTheme === 'dark') {
+                isDarkTheme = true;
+                document.body.classList.add('dark-theme');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        }
+
+        // Letter Functions
+        function sendLetter() {
+            const sender = senderName.value.trim();
+            const recipient = recipientName.value.trim();
+            const content = letterContent.value.trim();
+            
+            if (!sender || !recipient || !content) {
+                showNotification('Harap isi semua field!', 'error');
+                return;
+            }
+            
+            if (content.length < 10) {
+                showNotification('Isi surat harus minimal 10 karakter!', 'error');
+                return;
+            }
+            
+            // Generate letter ID
+            const letterId = 'L' + Date.now();
+            
+            // Create letter object
+            const letter = {
+                id: letterId,
+                sender,
+                recipient,
+                content,
+                senderId: currentUserId,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Save letter to localStorage
+            const letters = JSON.parse(localStorage.getItem('letters')) || [];
+            letters.push(letter);
+            localStorage.setItem('letters', JSON.stringify(letters));
+            
+            showNotification('Surat romantis Anda berhasil dikirim! Semoga kata-kata indah Anda menyentuh hati penerimanya.', 'success');
+            
+            // Clear form
+            senderName.value = '';
+            recipientName.value = '';
+            letterContent.value = '';
+            
+            showPage(mainPage);
+        }
+
+        function loadLetters() {
+            const letters = JSON.parse(localStorage.getItem('letters')) || [];
+            lettersContainer.innerHTML = '';
+            
+            if (letters.length === 0) {
+                lettersContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text); opacity: 0.7;">Belum ada surat yang ditulis. Jadilah yang pertama menuangkan perasaan melalui kata-kata!</p>';
+                return;
+            }
+            
+            // Sort letters by creation date (newest first)
+            letters.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            letters.forEach(letter => {
+                const letterCard = document.createElement('div');
+                letterCard.classList.add('letter-card');
+                
+                const isOwner = letter.senderId === currentUserId;
+                
+                letterCard.innerHTML = `
+                    <div class="letter-sender">Dari: ${letter.sender}</div>
+                    <div class="letter-recipient">Untuk: ${letter.recipient}</div>
+                    <div class="letter-preview">${letter.content.substring(0, 150)}...</div>
+                    ${isOwner ? `
+                        <div class="letter-actions">
+                            <button class="delete-letter-btn" data-id="${letter.id}">
+                                <i class="fas fa-trash"></i> Hapus
+                            </button>
+                        </div>
+                    ` : ''}
+                `;
+                
+                letterCard.addEventListener('click', (e) => {
+                    if (!e.target.closest('.delete-letter-btn')) {
+                        showLetterDetail(letter);
+                    }
+                });
+                
+                // Add delete event listener if it's the owner
+                if (isOwner) {
+                    const deleteBtn = letterCard.querySelector('.delete-letter-btn');
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteLetter(letter.id);
+                    });
+                }
+                
+                lettersContainer.appendChild(letterCard);
+            });
+        }
+
+        function deleteLetter(letterId) {
+            showConfirmation('Apakah Anda yakin ingin menghapus surat ini? Tindakan ini tidak dapat dibatalkan.', () => {
+                const letters = JSON.parse(localStorage.getItem('letters')) || [];
+                const updatedLetters = letters.filter(letter => letter.id !== letterId);
+                localStorage.setItem('letters', JSON.stringify(updatedLetters));
+                
+                showNotification('Surat berhasil dihapus. Kenangan indah tetap tersimpan di hati.', 'success');
+                loadLetters();
+            });
+        }
+
+        function showLetterDetail(letter) {
+            const isOwner = letter.senderId === currentUserId;
+            
+            letterDetail.innerHTML = `
+                <div class="letter-header">
+                    <div>
+                        <div class="letter-sender">Dari: ${letter.sender}</div>
+                        <div class="letter-recipient">Untuk: ${letter.recipient}</div>
+                    </div>
+                    <div style="font-size: 14px; color: var(--text); opacity: 0.7;">
+                        ${new Date(letter.createdAt).toLocaleDateString('id-ID')}
+                    </div>
+                </div>
+                <div class="letter-content">${letter.content}</div>
+                ${isOwner ? `
+                    <div class="letter-actions" style="margin-top: 20px;">
+                        <button class="delete-letter-btn" data-id="${letter.id}">
+                            <i class="fas fa-trash"></i> Hapus Surat
+                        </button>
+                    </div>
+                ` : ''}
+            `;
+            
+            // Add delete event listener if it's the owner
+            if (isOwner) {
+                const deleteBtn = letterDetail.querySelector('.delete-letter-btn');
+                deleteBtn.addEventListener('click', () => {
+                    deleteLetter(letter.id);
+                });
+            }
+            
+            showPage(letterDetailPage);
+        }
+
+        // Chat Functions
+        function loadUsers() {
+            // Get all users from localStorage
+            const users = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('user_')) {
+                    const userData = JSON.parse(localStorage.getItem(key));
+                    if (userData.userId !== currentUserId) {
+                        users.push(userData);
+                    }
+                }
+            }
+            
+            userList.innerHTML = '';
+            
+            if (users.length === 0) {
+                userList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text); opacity: 0.7;">Belum ada pengguna lain. Ajak teman Anda untuk bergabung!</div>';
+                return;
+            }
+            
+            users.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.classList.add('user-item');
+                userItem.innerHTML = `
+                    <div class="user-avatar">${user.name.charAt(0).toUpperCase()}</div>
+                    <div>
+                        <div class="user-name">${user.name}</div>
+                        <div class="user-id-small">ID: ${user.userId}</div>
+                    </div>
+                `;
+                
+                userItem.addEventListener('click', () => {
+                    // Remove active class from all users
+                    document.querySelectorAll('.user-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked user
+                    userItem.classList.add('active');
+                    
+                    // Set current chat user
+                    currentChatUser = user;
+                    chatWithUser.textContent = `Sedang chat dengan ${user.name}`;
+                    
+                    // Enable message input
+                    messageInput.disabled = false;
+                    sendMessageBtn.disabled = false;
+                    messageInput.focus();
+                    
+                    // Load chat history
+                    loadChatHistory(user.userId);
+                    
+                    // Show chat messages panel
+                    chatUsersPanel.style.display = 'none';
+                    chatMessagesPanel.classList.add('active');
+                });
+                
+                userList.appendChild(userItem);
+            });
+        }
+
+        function loadChatHistory(otherUserId) {
+            const chatId = [currentUserId, otherUserId].sort().join('_');
+            const messages = JSON.parse(localStorage.getItem('chat_' + chatId)) || [];
+            
+            messagesContainer.innerHTML = '';
+            
+            if (messages.length === 0) {
+                messagesContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text); opacity: 0.7; flex: 1; display: flex; align-items: center; justify-content: center;">Belum ada pesan. Mulai percakapan romantis sekarang!</div>';
+            } else {
+                messages.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.classList.add('message');
+                    
+                    if (message.senderId === currentUserId) {
+                        messageDiv.classList.add('sent');
+                    } else {
+                        messageDiv.classList.add('received');
+                    }
+                    
+                    messageDiv.innerHTML = `
+                        <div>${message.text}</div>
+                        <div class="message-time">${new Date(message.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
+                    `;
+                    
+                    messagesContainer.appendChild(messageDiv);
+                });
+            }
+            
+            // Scroll to bottom
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 100);
+        }
+
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            
+            if (!text || !currentChatUser) {
+                return;
+            }
+            
+            // Create message object
+            const message = {
+                text,
+                senderId: currentUserId,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Generate chat ID (combination of both user IDs, sorted)
+            const chatId = [currentUserId, currentChatUser.userId].sort().join('_');
+            
+            // Save message to localStorage
+            const messages = JSON.parse(localStorage.getItem('chat_' + chatId)) || [];
+            messages.push(message);
+            localStorage.setItem('chat_' + chatId, JSON.stringify(messages));
+            
+            // Clear input
+            messageInput.value = '';
+            
+            // Reload chat history
+            loadChatHistory(currentChatUser.userId);
+        }
+
+        // Search users by ID
+        function searchUsers() {
+            const searchTerm = userSearch.value.trim().toUpperCase();
+            const userItems = document.querySelectorAll('.user-item');
+            
+            userItems.forEach(item => {
+                const userId = item.querySelector('.user-id-small').textContent.split(': ')[1];
+                if (userId.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Back to users list on mobile
+        function backToUsersList() {
+            chatUsersPanel.style.display = 'block';
+            chatMessagesPanel.classList.remove('active');
+            currentChatUser = null;
+            messageInput.disabled = true;
+            sendMessageBtn.disabled = true;
+            messagesContainer.innerHTML = '';
+            
+            // Remove active class from all users
+            document.querySelectorAll('.user-item').forEach(item => {
+                item.classList.remove('active');
+            });
+        }
+
+        // Event Listeners
+        loginBtn.addEventListener('click', loginUser);
+        registerBtn.addEventListener('click', registerUser);
+        goToRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPage(registerPage);
+        });
+        goToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPage(loginPage);
+        });
+        logoutBtn.addEventListener('click', logoutUser);
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Navigation
+        writeLetterBtn.addEventListener('click', () => {
+            showPage(writeLetterPage);
+        });
+        
+        viewLettersBtn.addEventListener('click', () => {
+            loadLetters();
+            showPage(viewLettersPage);
+        });
+        
+        chatBtn.addEventListener('click', () => {
+            loadUsers();
+            showPage(chatPage);
+            // Reset chat view to users list
+            chatUsersPanel.style.display = 'block';
+            chatMessagesPanel.classList.remove('active');
+        });
+        
+        backFromWrite.addEventListener('click', () => {
+            showPage(mainPage);
+        });
+        
+        backFromView.addEventListener('click', () => {
+            showPage(mainPage);
+        });
+        
+        backFromDetail.addEventListener('click', () => {
+            showPage(viewLettersPage);
+        });
+        
+        backFromChat.addEventListener('click', () => {
+            showPage(mainPage);
+        });
+
+        // Letter Events
+        sendLetterBtn.addEventListener('click', sendLetter);
+
+        // Chat Events
+        sendMessageBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        userSearch.addEventListener('input', searchUsers);
+        backToUsers.addEventListener('click', backToUsersList);
+
+        // Initialize
+        checkAuthStatus();
+        createHearts();
+    </script>
+</body>
+</html>
